@@ -1,0 +1,388 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id               String            @id @default(uuid())
+  login            String            @unique
+  passwordHash     String            @map("password_hash")
+  fullName         String            @map("full_name")
+  roleId           Int               @map("role_id")
+  role             Role              @relation(fields: [roleId], references: [id])
+  isActive         Boolean           @default(true) @map("is_active")
+  canRentEquipment Boolean           @default(true) @map("can_rent_equipment")
+  canOrder         Boolean           @default(false) @map("can_order")
+  canPrepare       Boolean           @default(false) @map("can_prepare")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  lastLoginAt      DateTime?         @map("last_login_at")
+  refreshTokens    RefreshToken[]
+  dailyReports     DailyReport[]     @relation("author")
+  approvedReports  DailyReport[]     @relation("approver")
+  reportSignatures ReportSignature[]
+  equipmentRentals EquipmentRental[]
+  equipmentIssues  EquipmentIssue[]
+  materialUsages   MaterialUsage[]
+  materialAlerts   MaterialAlert[]
+  notes            Note[]
+  leaveBalances    LeaveBalance[]
+  leaveRequests    LeaveRequest[]  @relation("requester")
+  leaveReviews     LeaveRequest[]  @relation("reviewer")
+  purchaseOrders   PurchaseOrder[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("refresh_tokens")
+}
+
+model Vehicle {
+  id            Int            @id @default(autoincrement())
+  plateNumber   String         @unique @map("plate_number")
+  name          String
+  isActive      Boolean        @default(true) @map("is_active")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  vehicleUsages VehicleUsage[]
+
+  @@map("vehicles")
+}
+
+model Contractor {
+  id              String     @id @default(uuid())
+  type            String     @default("client") @db.VarChar(20) // 'client' | 'supplier' | 'both'
+  name            String     @db.VarChar(300)
+  nip             String?    @db.VarChar(10)
+  street          String?    @db.VarChar(200)
+  buildingNumber  String?    @map("building_number") @db.VarChar(20)
+  apartmentNumber String?    @map("apartment_number") @db.VarChar(20)
+  postalCode      String?    @map("postal_code") @db.VarChar(10)
+  city            String?    @db.VarChar(100)
+  country         String     @default("PL") @db.VarChar(3)
+  email           String?    @db.VarChar(200)
+  phone           String?    @db.VarChar(50)
+  isVatPayer      Boolean    @default(true) @map("is_vat_payer")
+  isActive        Boolean    @default(true) @map("is_active")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  locations       Location[]
+
+  @@map("contractors")
+}
+
+model Location {
+  id               Int               @id @default(autoincrement())
+  name             String            @unique @db.VarChar(200)
+  isActive         Boolean           @default(true) @map("is_active")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  contractorId     String?           @map("contractor_id")
+  contractor       Contractor?       @relation(fields: [contractorId], references: [id])
+  reportEntries    ReportEntry[]
+  departments      Department[]
+  materialUsages   MaterialUsage[]
+  purchaseOrders   PurchaseOrder[]
+  equipmentRentals EquipmentRental[]
+
+  @@map("locations")
+}
+
+model Department {
+  id             Int             @id @default(autoincrement())
+  locationId     Int             @map("location_id")
+  location       Location        @relation(fields: [locationId], references: [id])
+  name           String          @db.VarChar(100)
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  entries        ReportEntry[]
+  materialUsages MaterialUsage[]
+  purchaseOrders PurchaseOrder[]
+
+  @@unique([locationId, name])
+  @@map("departments")
+}
+
+// ── Moduł: Raport Dnia ────────────────────────────────────────────────────────
+
+model DailyReport {
+  id             String            @id @default(uuid())
+  userId         String            @map("user_id")
+  user           User              @relation("author", fields: [userId], references: [id])
+  reportDate     DateTime          @map("report_date") @db.Date
+  approvedAt     DateTime?         @map("approved_at") @db.Timestamptz
+  approvedById   String?           @map("approved_by_id")
+  approvedBy     User?             @relation("approver", fields: [approvedById], references: [id])
+  isOffer        String?           @map("is_offer")
+  unlockedUntil  DateTime?         @map("unlocked_until") @db.Timestamptz
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+  entries          ReportEntry[]
+  materialUsages   MaterialUsage[]
+  signatures       ReportSignature[]
+  purchaseOrders   PurchaseOrder[]
+  equipmentRentals EquipmentRental[]
+
+  @@map("daily_reports")
+}
+
+model ReportEntry {
+  id             String          @id @default(uuid())
+  reportId       String          @map("report_id")
+  report         DailyReport     @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  workStart      String          @map("work_start") @db.VarChar(5)
+  workEnd        String          @map("work_end") @db.VarChar(5)
+  locationId     Int             @map("location_id")
+  location       Location        @relation(fields: [locationId], references: [id])
+  departmentId   Int?            @map("department_id")
+  department     Department?     @relation(fields: [departmentId], references: [id])
+  description    String          @db.Text
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  vehicleUsages  VehicleUsage[]
+  materialUsages MaterialUsage[]
+
+  @@map("report_entries")
+}
+
+model VehicleUsage {
+  id        String      @id @default(uuid())
+  entryId   String      @map("entry_id")
+  entry     ReportEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  vehicleId Int         @map("vehicle_id")
+  vehicle   Vehicle     @relation(fields: [vehicleId], references: [id])
+  kmDriven  Int         @map("km_driven")
+
+  @@map("vehicle_usage")
+}
+
+model ReportSignature {
+  id        String      @id @default(uuid())
+  reportId  String      @map("report_id")
+  report    DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  signerId  String      @map("signer_id")
+  signer    User        @relation(fields: [signerId], references: [id])
+  signedAt  DateTime    @default(now()) @map("signed_at")
+
+  @@unique([reportId, signerId])
+  @@map("report_signatures")
+}
+
+// ── Moduł: Wypożyczalnia Sprzętu ─────────────────────────────────────────────
+
+model EquipmentCategory {
+  id    Int             @id @default(autoincrement())
+  name  String          @unique
+  items EquipmentItem[]
+
+  @@map("equipment_categories")
+}
+
+model EquipmentItem {
+  id           Int               @id @default(autoincrement())
+  categoryId   Int               @map("category_id")
+  category     EquipmentCategory @relation(fields: [categoryId], references: [id])
+  name         String
+  serialNumber String?           @map("serial_number")
+  status       String            @default("available") // available | rented | service | retired
+  notes        String?           @db.Text
+  createdAt    DateTime          @default(now()) @map("created_at")
+  rentals      EquipmentRental[]
+  issues       EquipmentIssue[]
+
+  @@map("equipment_items")
+}
+
+model EquipmentRental {
+  id             String       @id @default(uuid())
+  itemId         Int          @map("item_id")
+  item           EquipmentItem @relation(fields: [itemId], references: [id])
+  userId         String       @map("user_id")
+  user           User         @relation(fields: [userId], references: [id])
+  locationId     Int          @map("location_id")
+  location       Location     @relation(fields: [locationId], references: [id])
+  reportId       String?      @map("report_id")
+  report         DailyReport? @relation(fields: [reportId], references: [id])
+  rentedAt       DateTime     @default(now()) @map("rented_at")
+  expectedReturn DateTime?    @map("expected_return")
+  returnedAt     DateTime?    @map("returned_at")
+  returnNotes    String?      @map("return_notes") @db.Text
+
+  @@map("equipment_rentals")
+}
+
+model EquipmentIssue {
+  id          String        @id @default(uuid())
+  itemId      Int           @map("item_id")
+  item        EquipmentItem @relation(fields: [itemId], references: [id])
+  reportedBy  String        @map("reported_by")
+  reporter    User          @relation(fields: [reportedBy], references: [id])
+  description String        @db.Text
+  status      String        @default("open") // open | resolved
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  @@map("equipment_issues")
+}
+
+// ── Moduł: Materiały ──────────────────────────────────────────────────────────
+
+model Material {
+  id            Int             @id @default(autoincrement())
+  catalogNumber String?         @map("catalog_number") @db.VarChar(100)
+  name          String          @db.VarChar(300)
+  photoUrl      String?         @map("photo_url") @db.VarChar(500)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  usages        MaterialUsage[]
+  alerts        MaterialAlert[]
+  orderItems    PurchaseOrderItem[]
+
+  @@map("materials")
+}
+
+model MaterialUsage {
+  id           String       @id @default(uuid())
+  reportId     String?      @map("report_id")
+  report       DailyReport? @relation(fields: [reportId], references: [id])
+  entryId      String?      @map("entry_id")
+  entry        ReportEntry? @relation(fields: [entryId], references: [id], onDelete: SetNull)
+  materialId   Int          @map("material_id")
+  material     Material     @relation(fields: [materialId], references: [id])
+  userId       String       @map("user_id")
+  user         User         @relation(fields: [userId], references: [id])
+  locationId   Int?         @map("location_id")
+  location     Location?    @relation(fields: [locationId], references: [id])
+  departmentId Int?         @map("department_id")
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  quantity     Decimal      @map("quantity") @db.Decimal(10, 2)
+  unit         String       @default("szt") @db.VarChar(20)
+  notes        String?      @db.Text
+  usedAt       DateTime     @default(now()) @map("used_at")
+
+  @@map("material_usages")
+}
+
+// ── Moduł: Notatki ────────────────────────────────────────────────────────────
+
+model Note {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String   @db.VarChar(200)
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("notes")
+}
+
+// ── Moduł: HR ─────────────────────────────────────────────────────────────────
+
+model LeaveType {
+  id       Int            @id @default(autoincrement())
+  name     String         @unique @db.VarChar(100)
+  paid     Boolean        @default(true)
+  requests LeaveRequest[]
+
+  @@map("leave_types")
+}
+
+model LeaveBalance {
+  id            String @id @default(uuid())
+  userId        String @map("user_id")
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  year          Int
+  totalDays     Int    @default(26) @map("total_days")
+  usedDaysCarry Int    @default(0)  @map("used_days_carry")
+
+  @@unique([userId, year])
+  @@map("leave_balances")
+}
+
+model LeaveRequest {
+  id            String     @id @default(uuid())
+  userId        String     @map("user_id")
+  user          User       @relation("requester", fields: [userId], references: [id])
+  leaveTypeId   Int        @map("leave_type_id")
+  leaveType     LeaveType  @relation(fields: [leaveTypeId], references: [id])
+  dateFrom      DateTime   @map("date_from") @db.Date
+  dateTo        DateTime   @map("date_to")   @db.Date
+  daysCount     Int        @map("days_count")
+  notes         String?    @db.Text
+  status        String     @default("pending")
+  reviewedById  String?    @map("reviewed_by")
+  reviewer      User?      @relation("reviewer", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?  @map("reviewed_at")    @db.Timestamptz
+  reviewComment String?    @map("review_comment") @db.Text
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("leave_requests")
+}
+
+model MaterialAlert {
+  id         String   @id @default(uuid())
+  materialId Int      @map("material_id")
+  material   Material @relation(fields: [materialId], references: [id])
+  reportedBy String   @map("reported_by")
+  reporter   User     @relation(fields: [reportedBy], references: [id])
+  photoUrl   String?  @map("photo_url") @db.VarChar(500)
+  notes      String?  @db.Text
+  status     String   @default("open")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("material_alerts")
+}
+
+// ── Moduł: Zamówienia ─────────────────────────────────────────────────────────
+
+model PurchaseOrder {
+  id           String              @id @default(uuid())
+  userId       String              @map("user_id")
+  user         User                @relation(fields: [userId], references: [id])
+  locationId   Int?                @map("location_id")
+  location     Location?           @relation(fields: [locationId], references: [id])
+  departmentId Int?                @map("department_id")
+  department   Department?         @relation(fields: [departmentId], references: [id])
+  status       String              @default("pending") // pending | ordered | prepared | delivered | cancelled
+  neededBy     DateTime?           @map("needed_by") @db.Date
+  notes        String?             @db.Text
+  reportId     String?             @map("report_id")
+  report       DailyReport?        @relation(fields: [reportId], references: [id])
+  createdAt    DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  items        PurchaseOrderItem[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id         String        @id @default(uuid())
+  orderId    String        @map("order_id")
+  order      PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  materialId Int?          @map("material_id")
+  material   Material?     @relation(fields: [materialId], references: [id])
+  customName String?       @map("custom_name") @db.VarChar(300)
+  quantity   Decimal       @db.Decimal(10, 2)
+  unit       String        @default("szt") @db.VarChar(20)
+  notes      String?       @db.Text
+
+  @@map("purchase_order_items")
+}

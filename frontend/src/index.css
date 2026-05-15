@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Motyw Jasny — Sapphire Navy (domyślny) ─────────────────────────────── */
+:root,
+[data-theme="light"] {
+  --bg:             #edf2fb;
+  --surface:        #f4f7fd;
+  --surface-input:  #eaf0fa;
+  --surface-muted:  #e0ecfd;
+  --ink:            #0c1e3c;
+  --ink-dim:        #5b8ff5;
+  --ink-muted:      #7da8d8;
+  --border:         rgba(12,30,60,0.07);
+  --border-strong:  rgba(12,30,60,0.12);
+  --primary:        #2761eb;
+  --primary-hover:  #1a4280;
+  --card-shadow:    0 0 0 1px rgba(12,30,60,0.07), 0 1px 4px rgba(12,30,60,0.08), 0 4px 12px rgba(12,30,60,0.04);
+}
+
+/* ── Motyw Ciemny — UR Industrial (gray-900 + żółty akcent) ─────────────── */
+[data-theme="dark"] {
+  --bg:             #111827;
+  --surface:        #1f2937;
+  --surface-input:  #374151;
+  --surface-muted:  #374151;
+  --ink:            #f9fafb;
+  --ink-dim:        #fbbf24;
+  --ink-muted:      #9ca3af;
+  --border:         rgba(255,255,255,0.07);
+  --border-strong:  rgba(255,255,255,0.13);
+  --primary:        #fbbf24;
+  --primary-hover:  #f59e0b;
+  --card-shadow:    0 0 0 1px rgba(255,255,255,0.06), 0 1px 4px rgba(0,0,0,0.35), 0 4px 12px rgba(0,0,0,0.20);
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+    font-feature-settings: "cv11", "ss01", "calt";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* Zapobieganie autozoomowi iOS na focus */
+  input, textarea, select, button {
+    font-size: 16px;
+  }
+  @media (min-width: 640px) {
+    input, textarea, select {
+      font-size: 14px;
+    }
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .section-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+
+  /* Karta — powierzchnia z cieniem */
+  .card {
+    background: var(--surface);
+    border-radius: 1rem;
+    box-shadow: var(--card-shadow);
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Płynne przejście motywu */
+  .theme-transition {
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+}

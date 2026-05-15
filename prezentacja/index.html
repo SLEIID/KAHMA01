@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAHMA — Szkolenie użytkownika</title>
+<style>
+  :root {
+    --navy:   #0c1e3c;
+    --blue:   #2761eb;
+    --blue2:  #1a4fc4;
+    --light:  #edf2fb;
+    --white:  #ffffff;
+    --amber:  #f59e0b;
+    --green:  #22c55e;
+    --red:    #ef4444;
+    --ink:    #1e293b;
+    --muted:  #64748b;
+    --card:   #f8fafc;
+    --border: #e2e8f0;
+    --shadow: 0 4px 24px rgba(12,30,60,.13);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--navy);
+    color: var(--ink);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── DECK ── */
+  #deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(60px);
+    transition: opacity .42s cubic-bezier(.4,0,.2,1),
+                transform .42s cubic-bezier(.4,0,.2,1);
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+  }
+  .slide.exit {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+
+  /* ── HEADER BAR ── */
+  .slide-header {
+    background: var(--navy);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 48px;
+    flex-shrink: 0;
+  }
+  .slide-header .logo-mark {
+    width: 40px; height: 40px;
+    background: var(--blue);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 20px; color: #fff;
+    letter-spacing: -1px; flex-shrink: 0;
+  }
+  .slide-header .brand { font-size: 22px; font-weight: 800; letter-spacing: .5px; }
+  .slide-header .subtitle { font-size: 13px; color: #8ba5d4; margin-top: 1px; }
+  .slide-header .spacer { flex: 1; }
+  .slide-num {
+    font-size: 13px; color: #8ba5d4; font-weight: 600;
+  }
+
+  /* ── BODY ── */
+  .slide-body {
+    flex: 1;
+    background: var(--light);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TITLE SLIDE (slide 0) ── */
+  .slide-cover .slide-body {
+    background: linear-gradient(135deg, var(--navy) 0%, #16306a 60%, #1a4fc4 100%);
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide-cover .slide-body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .cover-inner {
+    position: relative;
+    text-align: center;
+    color: #fff;
+    padding: 40px;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: rgba(39,97,235,.45);
+    border: 1px solid rgba(39,97,235,.7);
+    color: #93bbff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 28px;
+  }
+  .cover-title {
+    font-size: clamp(42px, 6vw, 80px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+  }
+  .cover-title span { color: #93bbff; }
+  .cover-sub {
+    font-size: clamp(16px, 2vw, 22px);
+    color: #a8c4f0;
+    margin-bottom: 48px;
+  }
+  .cover-modules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    max-width: 700px;
+  }
+  .cover-chip {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    color: #d0e4ff;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .cover-chip .chip-num {
+    background: var(--blue);
+    color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+  }
+
+  /* ── CONTENT LAYOUTS ── */
+  .content {
+    flex: 1;
+    padding: 36px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+  }
+  .content-row {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+  }
+
+  /* ── SLIDE TITLE ── */
+  .slide-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  .slide-title .icon-wrap {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .slide-title h2 {
+    font-size: clamp(22px, 3vw, 34px);
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1.1;
+  }
+  .slide-title p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 24px;
+    flex: 1;
+  }
+  .card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card h3 .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* ── STEP LIST ── */
+  .step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .step-num {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-text strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .step-text span {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ── FEATURE LIST ── */
+  .feat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .feat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .feat-item .feat-icon {
+    font-size: 20px;
+    width: 34px; text-align: center; flex-shrink: 0;
+  }
+  .feat-item .feat-body strong {
+    display: block; font-size: 13px; font-weight: 700; color: var(--ink);
+  }
+  .feat-item .feat-body span {
+    font-size: 12px; color: var(--muted);
+  }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+  }
+  .badge-blue  { background: #dbeafe; color: #1d4ed8; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-amber { background: #fef3c7; color: #b45309; }
+  .badge-red   { background: #fee2e2; color: #b91c1c; }
+  .badge-navy  { background: #e0e7ff; color: var(--navy); }
+
+  /* ── ROLE CARDS ── */
+  .role-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .role-card {
+    border-radius: 14px;
+    padding: 20px;
+    border: 2px solid transparent;
+  }
+  .role-card.admin { background: #eff6ff; border-color: #bfdbfe; }
+  .role-card.worker { background: #f0fdf4; border-color: #bbf7d0; }
+  .role-card h4 {
+    font-size: 15px; font-weight: 800; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .role-card ul {
+    padding-left: 16px;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .role-card li {
+    font-size: 13px; color: var(--ink);
+  }
+
+  /* ── UI MOCKUP ELEMENTS ── */
+  .mock-input {
+    background: #f1f5f9;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .mock-input.filled { color: var(--ink); background: #fff; }
+  .mock-label {
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 4px;
+  }
+  .mock-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 24px; border-radius: 10px;
+    font-size: 14px; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, var(--blue), var(--blue2));
+    width: 100%;
+  }
+  .mock-btn-sm {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, var(--blue), var(--blue2));
+  }
+  .mock-btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--blue);
+    color: var(--blue);
+    padding: 7px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .mock-btn-green {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+  }
+  .mock-btn-amber {
+    background: linear-gradient(135deg, #d97706, #b45309);
+  }
+
+  /* ── MODULE OVERVIEW GRID ── */
+  .mod-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .mod-card {
+    border-radius: 14px;
+    padding: 20px 16px;
+    text-align: center;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+  }
+  .mod-card .mod-icon { font-size: 32px; margin-bottom: 10px; }
+  .mod-card h4 { font-size: 13px; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+  .mod-card p  { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  /* ── TABLE MOCK ── */
+  .mock-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mock-table th {
+    background: var(--navy); color: #fff;
+    padding: 8px 12px; text-align: left;
+    font-size: 11px; font-weight: 700; letter-spacing: .3px;
+  }
+  .mock-table th:first-child { border-radius: 8px 0 0 0; }
+  .mock-table th:last-child  { border-radius: 0 8px 0 0; }
+  .mock-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink);
+  }
+  .mock-table tr:nth-child(even) td { background: #f8fafc; }
+  .mock-table tr:last-child td { border-bottom: none; }
+
+  /* ── CALENDAR ── */
+  .mini-cal {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+    background: #f1f5f9; color: var(--muted);
+  }
+  .cal-day.header { background: transparent; color: var(--muted); font-size: 10px; font-weight: 700; }
+  .cal-day.work   { background: #dcfce7; color: #15803d; }
+  .cal-day.leave  { background: #dbeafe; color: #1d4ed8; }
+  .cal-day.today  { background: var(--blue); color: #fff; }
+  .cal-day.empty  { background: transparent; }
+
+  /* ── PROGRESS BAR ── */
+  #progress {
+    position: fixed;
+    bottom: 0; left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--blue), #93bbff);
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+    z-index: 100;
+  }
+
+  /* ── NAV ── */
+  #nav {
+    position: fixed;
+    bottom: 20px; right: 28px;
+    display: flex; gap: 8px;
+    z-index: 100;
+  }
+  .nav-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: 2px solid rgba(255,255,255,.15);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .15s;
+  }
+  .nav-btn:hover { background: var(--blue); transform: scale(1.08); }
+  .nav-btn:disabled { opacity: .35; cursor: default; transform: none; }
+
+  /* ── DOTS ── */
+  #dots {
+    position: fixed;
+    bottom: 26px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 7px;
+    z-index: 100;
+  }
+  .dot-btn {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    border: none; cursor: pointer;
+    transition: background .2s, transform .2s;
+  }
+  .dot-btn.active { background: var(--blue); transform: scale(1.4); }
+
+  /* ── SHORTCUT HINT ── */
+  #hint {
+    position: fixed;
+    bottom: 22px; left: 20px;
+    font-size: 11px; color: rgba(255,255,255,.35);
+    z-index: 100;
+  }
+
+  /* ── COLORS for icon wraps ── */
+  .ic-blue  { background: #dbeafe; }
+  .ic-green { background: #dcfce7; }
+  .ic-amber { background: #fef3c7; }
+  .ic-red   { background: #fee2e2; }
+  .ic-navy  { background: #e0e7ff; }
+  .ic-purple{ background: #f3e8ff; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px; background: var(--border); margin: 4px 0;
+  }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 16px; border-radius: 10px;
+    border-left: 4px solid;
+    font-size: 13px; line-height: 1.5;
+  }
+  .info-box.blue  { background: #eff6ff; border-color: var(--blue);  color: #1e40af; }
+  .info-box.green { background: #f0fdf4; border-color: var(--green); color: #166534; }
+  .info-box.amber { background: #fffbeb; border-color: var(--amber); color: #92400e; }
+
+  /* ── SCREEN MOCK (phone frame) ── */
+  .screen-mock {
+    background: var(--white);
+    border-radius: 16px;
+    border: 2px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .screen-top {
+    background: var(--navy);
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .screen-body {
+    padding: 14px;
+  }
+
+  /* ── TAG CLOUD ── */
+  .tag-cloud {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .tag {
+    padding: 6px 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+    background: var(--card); border: 1.5px solid var(--border);
+    color: var(--ink);
+    display: flex; align-items: center; gap: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 0 — COVER
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-cover active" data-index="0">
+    <div class="slide-header">
+      <div class="logo-mark">K</div>
+      <div>
+        <div class="brand">KAHMA</div>
+        <div class="subtitle">System zarządzania pracownikami i zasobami</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="slide-num">Szkolenie użytkownika · 2026</div>
+    </div>
+    <div class="slide-body">
+      <div class="cover-inner">
+        <div class="cover-badge">🎓 Szkolenie użytkownika</div>
+        <div class="cover-title">Witaj w systemie<br><span>KAHMA</span></div>
+        <div class="cover-sub">Twój kompletny system Mini ERP — prosto i mobilnie</div>
+        <div class="cover-modules">
+          <div class="cover-chip"><span class="chip-num">1</span> Platforma ERP</div>
+          <div class="cover-chip"><span class="chip-num">2</span> Logowanie</div>
+          <div class="cover-chip"><span class="chip-num">3</span> HR i urlopy</div>
+          <div class="cover-chip"><span class="chip-num">4</span> Wypożyczalnia</div>
+          <div class="cover-chip"><span class="chip-num">5</span> Materiałówka</div>
+          <div class="cover-chip"><span class="chip-num">6</span> Raport dnia</div>
+          <div class="cover-chip"><span class="chip-num">7</span> Rozliczenie</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 1 — PLATFORMA MINI ERP
+  ══════════════════════════════════════════ -->
+  <div class="slide" data-index="1">
+    <div class="slide-header">
+      <div class="logo-mark">K</div>
+      <div><div class="brand">KAHMA</div><div class="subtitle">Mini ERP</div></div>
+      <div class="spacer"></div>
+      <div class="slide-num">1 / 7</div>
+    </div>
+    <div class="slide-body">
+      <div class="content">
+        <div class="slide-title">
+          <div class="icon-wrap ic-navy" style="font-size:26px;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;">🏢</div>
+          <div>
+            <h2>Platforma Mini ERP</h2>
+            <p>Jeden system — wszystko czego potrzebujesz w pracy</p>
+          </div>
+        </div>
+        <div class="content-row">
+          <div style="flex:1.2;display:flex;flex-direction:column;gap:14px;">
+            <div class="mod-grid">
+              <div class="mod-card">
+                <div class="mod-icon">📋</div>
+                <h4>Raporty Dnia</h4>
+                <p>Rejestruj czas pracy, lokalizacje i materiały</p>
+              </div>
+              <div class="mod-card">
+                <div class="mod-icon">🔧</div>
+                <h4>Wypożyczalnia</h4>
+                <p>Sprzęt, narzędzia, podnośniki — pełna kontrola</p>
+              </div>
+              <div class="mod-card">
+                <div class="mod-icon">📦</div>
+                <h4>Materiałówka</h4>
+                <p>4 535 materiałów z wyszukiwarką i historią</p>
+              </div>
+              <div class="mod-card">
+                <div class="mod-icon">🏖️</div>
+                <h4>HR i Urlopy</h4>
+                <p>Wnioski, salda 26 dni, kalendarz obecności</p>
+              </div>
+              <div class="mod-card">
+                <div class="mod-icon">🚗</div>
+                <h4>Flota Pojazdów</h4>
+                <p>21 pojazdów, liczniki km, historia przebiegu</p>
+              </div>
+              <div class="mod-card">
+                <div class="mod-icon">📊</div>
+                <h4>Eksport XLSX</h4>
+                <p>Raporty i zestawienia w Excelu jednym kliknięciem</p>
+              </div>
+            </div>
+            <div class="info-box blue">
+              💡 <span>System działa w przeglądarce na telefonie i komputerze — bez instalacji, zawsze pod ręką na <strong>kahma.leanmatik.net</strong></span>
+            </div>
+          </div>
+          <div style="flex:.8;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--blue)"></span>Dwie role w systemie</h3>
+              <div class="role-grid" style="grid-template-columns:1fr;">
+                <div class="role-card admin">
+                  <h4>🛡️ Administrator</h4>
+                  <ul>
+                    <li>Widzi raporty wszystkich pracowników</li>
+                    <li>Zarządza użytkownikami i flotą</li>
+                    <li>Zatwierdza urlopy i wnioski HR</li>
+                    <li>Eksportuje dane do XLSX</li>
+                    <li>Może odblokować każdy raport</li>
+                  </ul>
+                </div>
+                <div class="role-card worker" style="margin-top:10px;">
+                  <h4>👷 Pracownik</h4>
+                  <ul>
+                    <li>Tworzy i edytuje swoje raporty</li>
+                    <li>Wypożycza i zwraca sprzęt</li>
+                    <li>Rejestruje zużycie materiałów</li>
+                    <li>Składa wnioski urlopowe</li>
+                    <li>Podpisuje raporty kolegów</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 2 — LOGOWANIE
+  ══════════════════════════════════════════ -->
+  <div class="slide" data-index="2">
+    <div class="slide-header">
+      <div class="logo-mark">K</div>
+      <div><div class="brand">KAHMA</div><div class="subtitle">Logowanie do systemu</div></div>
+      <div class="spacer"></div>
+      <div class="slide-num">2 / 7</div>
+    </div>
+    <div class="slide-body">
+      <div class="content">
+        <div class="slide-title">
+          <div class="icon-wrap ic-blue" style="font-size:26px;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;">🔐</div>
+          <div>
+            <h2>Logowanie do systemu</h2>
+            <p>Bezpieczny dostęp przez przeglądarkę — telefon lub komputer</p>
+          </div>
+        </div>
+        <div class="content-row">
+          <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--blue)"></span>Jak się zalogować?</h3>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">1</div>
+                  <div class="step-text">
+                    <strong>Otwórz przeglądarkę</strong>
+                    <span>Wejdź na <strong>kahma.leanmatik.net</strong> — działa na każdym urządzeniu</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">2</div>
+                  <div class="step-text">
+                    <strong>Wpisz login i hasło</strong>
+                    <span>Dane dostępowe otrzymujesz od administratora systemu</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">3</div>
+                  <div class="step-text">
+                    <strong>Kliknij „Zaloguj się"</strong>
+                    <span>Zostaniesz przekierowany na Dashboard z dostępnymi modułami</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">4</div>
+                  <div class="step-text">
+                    <strong>Wylogowanie</strong>
+                    <span>Przycisk wylogowania dostępny w lewym dolnym rogu paska bocznego</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="info-box amber">
+              ⚠️ <span>Po <strong>15 minutach</strong> bezczynności sesja jest odświeżana automatycznie. Przy dłuższej przerwie zostaniesz wylogowany — <strong>dane zapisane w formularzu nie przepadają</strong> (sesja przeglądarki).</span>
+            </div>
+          </div>
+          <div style="flex:.9;display:flex;flex-direction:column;gap:14px;">
+            <div class="screen-mock">
+              <div class="screen-top">
+                🔒 kahma.leanmatik.net
+                <span style="color:#8ba5d4;font-weight:400;">Bezpieczne połączenie</span>
+              </div>
+              <div class="screen-body" style="background:linear-gradient(160deg,#18181b,#27272a);padding:28px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+                <div style="width:180px;height:54px;background:linear-gradient(135deg,#1a4fc4,#2761eb);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#fff;letter-spacing:-1px;box-shadow:0 4px 20px rgba(39,97,235,.5);">
+                  KAHMA
+                </div>
+                <div style="width:100%;max-width:280px;">
+                  <div class="mock-label">Login</div>
+                  <div class="mock-input filled">jan.kowalski</div>
+                  <div class="mock-label">Hasło</div>
+                  <div class="mock-input filled">••••••••</div>
+                  <div class="mock-btn" style="margin-top:4px;">🔐 Zaloguj się</div>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="padding:16px;">
+              <h3><span class="dot" style="background:var(--green)"></span>Po zalogowaniu — Dashboard</h3>
+              <div class="feat-list">
+                <div class="feat-item">
+                  <div class="feat-icon">📊</div>
+                  <div class="feat-body">
+                    <strong>Twoje statystyki miesiąca</strong>
+                    <span>Raporty, godziny, wypożyczenia, pobrania</span>
+                  </div>
+                </div>
+                <div class="feat-item">
+                  <div class="feat-icon">🔔</div>
+                  <div class="feat-body">
+                    <strong>Przypomnienie o raporcie</strong>
+                    <span>Baner pojawia się po 12:00 jeśli brak raportu</span>
+                  </div>
+                </div>
+                <div class="feat-item">
+                  <div class="feat-icon">⬛</div>
+                  <div class="feat-body">
+                    <strong>Kafelki modułów</strong>
+                    <span>Szybki dostęp do wszystkich funkcji systemu</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 3 — HR
+  ══════════════════════════════════════════ -->
+  <div class="slide" data-index="3">
+    <div class="slide-header">
+      <div class="logo-mark">K</div>
+      <div><div class="brand">KAHMA</div><div class="subtitle">Moduł HR i Urlopy</div></div>
+      <div class="spacer"></div>
+      <div class="slide-num">3 / 7</div>
+    </div>
+    <div class="slide-body">
+      <div class="content">
+        <div class="slide-title">
+          <div class="icon-wrap ic-amber" style="font-size:26px;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;">🏖️</div>
+          <div>
+            <h2>Moduł HR — Urlopy i Obecność</h2>
+            <p>Wnioski urlopowe, saldo dni i kalendarz pracownika</p>
+          </div>
+        </div>
+        <div class="content-row">
+          <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--amber)"></span>Typy urlopów</h3>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;">
+                  <span>🌴</span><span style="font-size:13px;font-weight:600;color:var(--ink);">Urlop wypoczynkowy</span>
+                  <span class="badge badge-amber" style="margin-left:auto;">odlicza z puli 26 dni</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;">
+                  <span>⚡</span><span style="font-size:13px;font-weight:600;color:var(--ink);">Urlop na żądanie</span>
+                  <span class="badge badge-amber" style="margin-left:auto;">odlicza z puli</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;">
+                  <span>🎉</span><span style="font-size:13px;font-weight:600;color:var(--ink);">Urlop okolicznościowy</span>
+                  <span class="badge badge-amber" style="margin-left:auto;">odlicza z puli</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#f0fdf4;border:1px solid #bbf7d0;">
+                  <span>🏥</span><span style="font-size:13px;font-weight:600;color:var(--ink);">L4 — Zwolnienie lekarskie</span>
+                  <span class="badge badge-green" style="margin-left:auto;">nie odlicza z puli</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#f1f5f9;border:1px solid var(--border);">
+                  <span>💼</span><span style="font-size:13px;font-weight:600;color:var(--ink);">Urlop bezpłatny</span>
+                  <span class="badge badge-navy" style="margin-left:auto;">odlicza z puli</span>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="padding:16px;">
+              <h3><span class="dot" style="background:var(--blue)"></span>Jak złożyć wniosek?</h3>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">1</div>
+                  <div class="step-text"><strong>HR → „Nowy wniosek"</strong><span>Wybierz typ urlopu i zakres dat</span></div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">2</div>
+                  <div class="step-text"><strong>Dodaj uwagi (opcjonalnie)</strong><span>Krótkie uzasadnienie lub info dla admina</span></div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">3</div>
+                  <div class="step-text"><strong>Czekaj na decyzję</strong><span>Admin zatwierdza lub odrzuca z komentarzem</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--green)"></span>Saldo urlopowe</h3>
+              <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <div style="flex:1;background:#f0fdf4;border-radius:10px;padding:14px;text-align:center;border:1.5px solid #bbf7d0;">
+                  <div style="font-size:28px;font-weight:900;color:#16a34a;">26</div>
+                  <div style="font-size:11px;color:#166534;font-weight:600;">Dni w roku</div>
+                </div>
+                <div style="flex:1;background:#eff6ff;border-radius:10px;padding:14px;text-align:center;border:1.5px solid #bfdbfe;">
+                  <div style="font-size:28px;font-weight:900;color:var(--blue);">14</div>
+                  <div style="font-size:11px;color:#1d4ed8;font-weight:600;">Wykorzystane</div>
+                </div>
+                <div style="flex:1;background:#fffbeb;border-radius:10px;padding:14px;text-align:center;border:1.5px solid #fde68a;">
+                  <div style="font-size:28px;font-weight:900;color:#d97706;">12</div>
+                  <div style="font-size:11px;color:#b45309;font-weight:600;">Pozostałe</div>
+                </div>
+              </div>
+              <div class="info-box green" style="font-size:12px;">✅ <span>Saldo aktualizuje się automatycznie po zatwierdzeniu wniosku przez administratora.</span></div>
+            </div>
+            <div class="card">
+              <h3><span class="dot" style="background:var(--blue)"></span>Kalendarz obecności — kwiecień</h3>
+              <div class="mini-cal">
+                <div class="cal-day header">Pn</div><div class="cal-day header">Wt</div><div class="cal-day header">Śr</div><div class="cal-day header">Cz</div><div class="cal-day header">Pt</div><div class="cal-day header">So</div><div class="cal-day header">Nd</div>
+                <div class="cal-day empty"></div><div class="cal-day work">1</div><div class="cal-day work">2</div><div class="cal-day work">3</div><div class="cal-day work">4</div><div class="cal-day">5</div><div class="cal-day">6</div>
+                <div class="cal-day work">7</div><div class="cal-day work">8</div><div class="cal-day work">9</div><div class="cal-day work">10</div><div class="cal-day work">11</div><div class="cal-day">12</div><div class="cal-day">13</div>
+                <div class="cal-day leave">14</div><div class="cal-day leave">15</div><div class="cal-day leave">16</div><div class="cal-day work">17</div><div class="cal-day work">18</div><div class="cal-day">19</div><div class="cal-day">20</div>
+                <div class="cal-day today">21</div><div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div><div class="cal-day">27</div>
+                <div class="cal-day">28</div><div class="cal-day">29</div><div class="cal-day">30</div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+              </div>
+              <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);">
+                  <div style="width:12px;height:12px;border-radius:3px;background:#dcfce7;"></div> Przepracowany
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);">
+                  <div style="width:12px;height:12px;border-radius:3px;background:#dbeafe;"></div> Urlop
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);">
+                  <div style="width:12px;height:12px;border-radius:3px;background:var(--blue);"></div> Dziś
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 4 — WYPOŻYCZALNIA
+  ══════════════════════════════════════════ -->
+  <div class="slide" data-index="4">
+    <div class="slide-header">
+      <div class="logo-mark">K</div>
+      <div><div class="brand">KAHMA</div><div class="subtitle">Wypożyczalnia Sprzętu</div></div>
+      <div class="spacer"></div>
+      <div class="slide-num">4 / 7</div>
+    </div>
+    <div class="slide-body">
+      <div class="content">
+        <div class="slide-title">
+          <div class="icon-wrap ic-red" style="font-size:26px;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;">🔧</div>
+          <div>
+            <h2>Wypożyczalnia Sprzętu</h2>
+            <p>Narzędzia, podnośniki i sprzęt montażowy — szybkie wypożyczenie i zwrot</p>
+          </div>
+        </div>
+        <div class="content-row">
+          <div style="flex:1.1;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--blue)"></span>Jak wypożyczyć sprzęt?</h3>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">1</div>
+                  <div class="step-text">
+                    <strong>Przejdź do modułu „Wypożyczalnia"</strong>
+                    <span>Lista dostępnego sprzętu posortowana wg kategorii</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">2</div>
+                  <div class="step-text">
+                    <strong>Znajdź potrzebny sprzęt</strong>
+                    <span>Filtruj po kategorii lub przeszukaj listę — status ZIELONY = dostępny</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">3</div>
+                  <div class="step-text">
+                    <strong>Kliknij „Wypożycz"</strong>
+                    <span>Potwierdzenie — sprzęt przypisany do Ciebie, status zmieniony na WYPOŻYCZONY</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">4</div>
+                  <div class="step-text">
+                    <strong>Zwróć sprzęt po pracy</strong>
+                    <span>Twoje wypożyczenia → „Zwróć" → opcjonalna notatka przy zwrocie</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="padding:16px;">
+              <h3><span class="dot" style="background:var(--red)"></span>Zgłoś problem ze sprzętem</h3>
+              <div class="feat-list">
+                <div class="feat-item">
+                  <div class="feat-icon">⚠️</div>
+                  <div class="feat-body">
+                    <strong>Tylko dla sprzętu który masz wypożyczony</strong>
+                    <span>Przycisk „Problem" widoczny przy Twoich aktywnych wypożyczeniach</span>
+                  </div>
+                </div>
+                <div class="feat-item">
+                  <div class="feat-icon">📝</div>
+                  <div class="feat-body">
+                    <strong>Opisz usterkę</strong>
+                    <span>Admin otrzyma zgłoszenie i zamknie je po naprawie</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--green)"></span>Statusy sprzętu</h3>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--ink);">Dostępny</div>
+                    <div style="font-size:12px;color:var(--muted);">Można wypożyczyć</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--ink);">Wypożyczony</div>
+                    <div style="font-size:12px;color:var(--muted);">Zajęty przez innego pracownika</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--ink);">Serwis</div>
+                    <div style="font-size:12px;color:var(--muted);">W naprawie — niedostępny</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#f1f5f9;border:1px solid var(--border);">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#94a3b8;flex-shrink:0;"></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--ink);">Wycofany</div>
+                    <div style="font-size:12px;color:var(--muted);">Nieaktywny — nie pojawia się na liście</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <h3><span class="dot" style="background:var(--navy)"></span>Dostępne kategorie</h3>
+              <div class="tag-cloud">
+                <div class="tag">🏗️ Podnośniki</div>
+                <div class="tag">🔩 Sprzęt montażowy</div>
+                <div class="tag">🔦 Narzędzia pomiarowe</div>
+                <div class="tag">⚡ Elektronarzędzia</div>
+              </div>
+              <div style="margin-top:12px;padding:10px 14px;background:#f1f5f9;border-radius:10px;">
+                <div style="font-size:12px;color:var(--muted);">Przykładowy sprzęt</div>
+                <div style="font-size:13px;font-weight:600;color:var(--ink);margin-top:4px;">Zwyżka 12m · Zwyżka 8m · Wiertarka Hilti · Szlifierka 125mm · Miernik Fluke 376 FC · Poziomnica laserowa</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 5 — MATERIAŁÓWKA
+  ══════════════════════════════════════════ -->
+  <div class="slide" data-index="5">
+    <div class="slide-header">
+      <div class="logo-mark">K</div>
+      <div><div class="brand">KAHMA</div><div class="subtitle">Materiałówka</div></div>
+      <div class="spacer"></div>
+      <div class="slide-num">5 / 7</div>
+    </div>
+    <div class="slide-body">
+      <div class="content">
+        <div class="slide-title">
+          <div class="icon-wrap ic-purple" style="font-size:26px;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;">📦</div>
+          <div>
+            <h2>Materiałówka</h2>
+            <p>4 535 materiałów — szybkie wyszukiwanie, rejestracja pobrań i alerty niskiego stanu</p>
+          </div>
+        </div>
+        <div class="content-row">
+          <div style="flex:1.1;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--blue)"></span>Jak zarejestrować pobranie?</h3>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">1</div>
+                  <div class="step-text">
+                    <strong>Wejdź do „Materiałówka"</strong>
+                    <span>Widoczne od razu 30 ostatnio używanych materiałów</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">2</div>
+                  <div class="step-text">
+                    <strong>Wyszukaj materiał (min. 3 znaki)</strong>
+                    <span>Kolejność słów nie ma znaczenia — system znajdzie po każdym</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">3</div>
+                  <div class="step-text">
+                    <strong>Wybierz materiał z listy</strong>
+                    <span>Kliknij na pozycję aby ją wybrać</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">4</div>
+                  <div class="step-text">
+                    <strong>Podaj ilość, jednostkę i uwagi</strong>
+                    <span>Jednostki: szt / mb / kg / kpl / rolka / opak / l</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">5</div>
+                  <div class="step-text">
+                    <strong>Kliknij „Pobierz"</strong>
+                    <span>Pobranie pojawia się w historii; można usunąć tylko dziś</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--red)"></span>Alert niskiego stanu</h3>
+              <div class="feat-list">
+                <div class="feat-item">
+                  <div class="feat-icon">📷</div>
+                  <div class="feat-body">
+                    <strong>Zaznacz „Zgłoś niski stan"</strong>
+                    <span>Checkbox widoczny podczas rejestracji pobrania</span>
+                  </div>
+                </div>
+                <div class="feat-item">
+                  <div class="feat-icon">🖼️</div>
+                  <div class="feat-body">
+                    <strong>Dodaj zdjęcie (opcjonalnie)</strong>
+                    <span>Zdjęcie stanu magazynowego — z kamery lub galerii</span>
+                  </div>
+                </div>
+                <div class="feat-item">
+                  <div class="feat-icon">🔔</div>
+                  <div class="feat-body">
+                    <strong>Admin widzi alert i zamyka go</strong>
+                    <span>Po uzupełnieniu magazynu admin oznacza jako rozwiązane</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <h3><span class="dot" style="background:var(--green)"></span>Materiały w raporcie dnia</h3>
+              <div class="info-box blue" style="font-size:12px;margin-bottom:0;">
+                💡 <span>Materiały możesz też dodawać bezpośrednio do <strong>wpisu raportu dnia</strong> — każdy wpis ma własną listę pobranych materiałów. Lokalizacja i wydział wypełniają się automatycznie z wpisu.</span>
+              </div>
+              <div style="margin-top:10px;background:#f8fafc;border-radius:10px;border:1px solid var(--border);padding:12px;">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Przykładowe pobranie z raportu</div>
+                <div style="font-size:13px;color:var(--ink);font-weight:600;">Kabel YDY 3×1,5mm² — <span style="color:var(--blue);">15 mb</span></div>
+                <div style="font-size:12px;color:var(--muted);">Budowa A · Hala produkcyjna · dziś 09:42</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 6 — RAPORT DNIA
+  ══════════════════════════════════════════ -->
+  <div class="slide" data-index="6">
+    <div class="slide-header">
+      <div class="logo-mark">K</div>
+      <div><div class="brand">KAHMA</div><div class="subtitle">Raport Dnia</div></div>
+      <div class="spacer"></div>
+      <div class="slide-num">6 / 7</div>
+    </div>
+    <div class="slide-body">
+      <div class="content">
+        <div class="slide-title">
+          <div class="icon-wrap ic-green" style="font-size:26px;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;">📋</div>
+          <div>
+            <h2>Nowy Raport · Edycja · Podpis</h2>
+            <p>Jeden raport na dzień — wiele wpisów, wiele lokalizacji, podpisy ekipy</p>
+          </div>
+        </div>
+        <div class="content-row">
+          <div style="flex:1.1;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--blue)"></span>Tworzenie raportu krok po kroku</h3>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">1</div>
+                  <div class="step-text">
+                    <strong>„Raporty" → „Nowy raport" lub „Edytuj dzisiejszy"</strong>
+                    <span>System automatycznie ustawia datę na dziś — nie można zmienić</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">2</div>
+                  <div class="step-text">
+                    <strong>Wybierz ekipę (raz na dzień)</strong>
+                    <span>Ekipa A/B/C/D/E/F — po wyborze nie można zmienić (bez admina)</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">3</div>
+                  <div class="step-text">
+                    <strong>Dodaj wpis pracy — „+ Nowy wpis"</strong>
+                    <span>Godziny od-do, lokalizacja, wydział (opcja), opis, pojazdy (opcja)</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">4</div>
+                  <div class="step-text">
+                    <strong>Krok 2 wpisu — dodaj materiały</strong>
+                    <span>Po zapisaniu wpisu pojawia się sekcja materiałów — dodaj lub pomiń</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">5</div>
+                  <div class="step-text">
+                    <strong>Możesz dodać wiele wpisów</strong>
+                    <span>Np. rano w hali, popołudniu na budowie — każdy wpis osobno</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="info-box amber">
+              🔒 <span><strong>Edycja tylko do północy.</strong> Raporty z poprzednich dni są zablokowane. Jeśli coś pominąłeś — poproś admina o odblokowanie na 24h.</span>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--navy)"></span>Pojazdy we wpisie</h3>
+              <div style="background:#f8fafc;border-radius:10px;border:1px solid var(--border);padding:12px;margin-bottom:10px;">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Przykładowy wpis z pojazdem</div>
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+                  <span style="font-size:13px;font-weight:700;color:var(--ink);">🚗 WGS 12345</span>
+                  <span style="font-size:12px;color:var(--muted);">·</span>
+                  <span style="font-size:13px;color:var(--blue);font-weight:600;">120 km</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <span style="font-size:13px;font-weight:700;color:var(--ink);">🚐 WGS 98765</span>
+                  <span style="font-size:12px;color:var(--muted);">·</span>
+                  <span style="font-size:13px;color:var(--blue);font-weight:600;">85 km</span>
+                </div>
+              </div>
+              <div style="font-size:12px;color:var(--muted);">Jeden wpis może zawierać wiele pojazdów. Licznik km jest aktualizowany automatycznie.</div>
+            </div>
+            <div class="card">
+              <h3><span class="dot" style="background:var(--green)"></span>Podpisywanie raportu kolegi</h3>
+              <div class="feat-list">
+                <div class="feat-item">
+                  <div class="feat-icon">✍️</div>
+                  <div class="feat-body">
+                    <strong>Przycisk „Podpisz się" w liście raportów</strong>
+                    <span>Widoczny na górze ekranu pracownika</span>
+                  </div>
+                </div>
+                <div class="feat-item">
+                  <div class="feat-icon">👥</div>
+                  <div class="feat-body">
+                    <strong>Wybierz raport kolegi z dzisiaj</strong>
+                    <span>Tylko raporty z bieżącego dnia można podpisać</span>
+                  </div>
+                </div>
+                <div class="feat-item">
+                  <div class="feat-icon">📝</div>
+                  <div class="feat-body">
+                    <strong>Pełny dostęp do edycji po podpisaniu</strong>
+                    <span>Możesz dodawać i edytować wpisy w podpisanym raporcie</span>
+                  </div>
+                </div>
+                <div class="feat-item">
+                  <div class="feat-icon">↩️</div>
+                  <div class="feat-body">
+                    <strong>Cofnięcie podpisu — tylko dziś</strong>
+                    <span>Przycisk „Cofnij" widoczny na karcie podpisanego raportu</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 7 — ROZLICZENIE DZIENNE
+  ══════════════════════════════════════════ -->
+  <div class="slide" data-index="7">
+    <div class="slide-header">
+      <div class="logo-mark">K</div>
+      <div><div class="brand">KAHMA</div><div class="subtitle">Rozliczenie dzienne</div></div>
+      <div class="spacer"></div>
+      <div class="slide-num">7 / 7</div>
+    </div>
+    <div class="slide-body">
+      <div class="content">
+        <div class="slide-title">
+          <div class="icon-wrap ic-navy" style="font-size:26px;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;">📊</div>
+          <div>
+            <h2>Rozliczenie Dzienne</h2>
+            <p>Podgląd pracy całej ekipy, zatwierdzanie i eksport do Excela</p>
+          </div>
+        </div>
+        <div class="content-row">
+          <div style="flex:1.2;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--blue)"></span>Widok admina — filtry raportów</h3>
+              <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
+                  <div>
+                    <div class="mock-label">Od daty</div>
+                    <div class="mock-input filled" style="margin:0;">2026-04-14</div>
+                  </div>
+                  <div>
+                    <div class="mock-label">Do daty</div>
+                    <div class="mock-input filled" style="margin:0;">2026-04-20</div>
+                  </div>
+                  <div>
+                    <div class="mock-label">Pracownik</div>
+                    <div class="mock-input filled" style="margin:0;">Wszyscy</div>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                  <div>
+                    <div class="mock-label">Lokalizacja</div>
+                    <div class="mock-input" style="margin:0;">Wszystkie</div>
+                  </div>
+                  <div>
+                    <div class="mock-label">Ekipa</div>
+                    <div class="mock-input" style="margin:0;">Wszystkie</div>
+                  </div>
+                </div>
+              </div>
+              <div style="overflow:auto;border-radius:10px;border:1px solid var(--border);">
+                <table class="mock-table">
+                  <thead>
+                    <tr>
+                      <th>Pracownik</th>
+                      <th>Data</th>
+                      <th>Ekipa</th>
+                      <th>Godziny</th>
+                      <th>Wpisy</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Jan Kowalski</td>
+                      <td>20.04</td>
+                      <td><span class="badge badge-blue">Ekipa A</span></td>
+                      <td>07:00–15:30</td>
+                      <td>2</td>
+                      <td><span class="badge badge-amber">Oczekuje</span></td>
+                    </tr>
+                    <tr>
+                      <td>Marek Nowak</td>
+                      <td>20.04</td>
+                      <td><span class="badge badge-blue">Ekipa B</span></td>
+                      <td>06:00–14:00</td>
+                      <td>3</td>
+                      <td><span class="badge badge-green">Zatwierdzone</span></td>
+                    </tr>
+                    <tr>
+                      <td>Piotr Wiśniew.</td>
+                      <td>19.04</td>
+                      <td><span class="badge badge-navy">Ekipa C</span></td>
+                      <td>08:00–16:00</td>
+                      <td>1</td>
+                      <td><span class="badge badge-green">Zatwierdzone</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div style="flex:.9;display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <h3><span class="dot" style="background:var(--green)"></span>Zatwierdzenie raportu</h3>
+              <div class="feat-list">
+                <div class="feat-item">
+                  <div class="feat-icon">✅</div>
+                  <div class="feat-body">
+                    <strong>Ofertowy / Bez oferty / Niezatwierdzone</strong>
+                    <span>Admin oznacza każdy raport odpowiednim statusem</span>
+                  </div>
+                </div>
+                <div class="feat-item">
+                  <div class="feat-icon">🔓</div>
+                  <div class="feat-body">
+                    <strong>Odblokuj raport na 24h</strong>
+                    <span>Gdy pracownik zgłosi błąd — admin odblokuje do korekty</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <h3><span class="dot" style="background:var(--amber)"></span>Eksport do XLSX</h3>
+              <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:10px;">
+                <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;">📥 Zawartość arkusza „Raporty"</div>
+                <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);">
+                  <span>• Data · Pracownik · Ekipa</span>
+                  <span>• Godziny · Lokalizacja · Wydział</span>
+                  <span>• Opis pracy</span>
+                  <span>• Pojazdy (tablice) · Km łącznie</span>
+                  <span>• Podpisany: Tak/— (sygnatariusze)</span>
+                </div>
+              </div>
+              <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:14px;">
+                <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;">📥 Arkusz „Materiały"</div>
+                <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);">
+                  <span>• Data · Pracownik · Lokalizacja</span>
+                  <span>• Materiał · Ilość · Jednostka</span>
+                  <span>• Uwagi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #deck -->
+
+<!-- ── PROGRESS + NAV ── -->
+<div id="progress"></div>
+
+<div id="dots"></div>
+
+<div id="nav">
+  <button class="nav-btn" id="btn-prev" onclick="go(-1)" title="Poprzedni (←)">‹</button>
+  <button class="nav-btn" id="btn-next" onclick="go(1)"  title="Następny (→)">›</button>
+</div>
+
+<div id="hint">← → lub kliknij strzałki</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  let cur = 0;
+
+  /* dots */
+  const dotsEl = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.className = 'dot-btn' + (i===0?' active':'');
+    b.onclick = () => goTo(i);
+    dotsEl.appendChild(b);
+  });
+
+  function updateUI() {
+    document.getElementById('progress').style.width = ((cur+1)/total*100)+'%';
+    document.getElementById('btn-prev').disabled = cur===0;
+    document.getElementById('btn-next').disabled = cur===total-1;
+    document.querySelectorAll('.dot-btn').forEach((b,i) => b.classList.toggle('active', i===cur));
+  }
+
+  function goTo(next) {
+    if (next===cur || next<0 || next>=total) return;
+    const prev = cur;
+    slides[prev].classList.add('exit');
+    slides[prev].classList.remove('active');
+    setTimeout(() => slides[prev].classList.remove('exit'), 420);
+    cur = next;
+    slides[cur].classList.add('active');
+    updateUI();
+  }
+
+  function go(dir) { goTo(cur+dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') { e.preventDefault(); go(1); }
+    if (e.key==='ArrowLeft' ||e.key==='ArrowUp')                { e.preventDefault(); go(-1); }
+  });
+
+  /* swipe */
+  let tx=0;
+  document.addEventListener('touchstart', e => tx=e.touches[0].clientX, {passive:true});
+  document.addEventListener('touchend',   e => {
+    const dx = tx - e.changedTouches[0].clientX;
+    if (Math.abs(dx)>50) go(dx>0?1:-1);
+  });
+
+  updateUI();
+</script>
+</body>
+</html>

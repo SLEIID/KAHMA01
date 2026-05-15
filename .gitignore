@@ -1,0 +1,24 @@
+# Zależności
+backend/node_modules/
+frontend/node_modules/
+
+# Build output
+backend/dist/
+frontend/dist/
+
+# Zmienne środowiskowe (SEKRETY — nigdy nie commituj)
+.env
+*.env
+.env.*
+
+# Uploady użytkowników (Docker volume)
+backend/uploads/
+
+# Archiwa i dumpy bazy (duże pliki, dane wrażliwe)
+*.tar.gz
+*.sql
+backup/
+
+# System
+.DS_Store
+*.log
